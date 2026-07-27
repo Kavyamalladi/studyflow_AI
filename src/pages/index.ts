@@ -1,0 +1,1 @@
+export { ProductWorkspacePage } from './ProductWorkspacePage';
