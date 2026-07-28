@@ -19,3 +19,12 @@ Thumbs.db
 
 # Vite
 *.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vite dev cache
+.vite/
+
+# VSCode
+.vscode/settings.json
