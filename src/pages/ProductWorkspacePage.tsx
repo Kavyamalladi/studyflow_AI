@@ -16,7 +16,7 @@ export function ProductWorkspacePage() {
   const view = useStudyStore((s) => s.view);
 
   return (
-    <div className="fixed inset-0 overflow-hidden" style={{ background: '#09090b' }}>
+    <div className="fixed inset-0 overflow-hidden" style={{ background: 'var(--color-background)' }}>
       <GlobalProviders />
 
       <AnimatePresence mode="wait">

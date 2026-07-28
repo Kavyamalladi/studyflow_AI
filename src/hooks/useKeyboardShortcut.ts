@@ -1,18 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface Options {
   key: string;
   ctrl?: boolean;
   meta?: boolean;
   shift?: boolean;
-  /** Prevent triggering when focused on inputs */
   ignoreInputs?: boolean;
 }
 
 export function useKeyboardShortcut(options: Options, callback: () => void) {
-  useEffect(() => {
-    const { key, ctrl, meta, shift, ignoreInputs = true } = options;
+  const { key, ctrl, meta, shift, ignoreInputs = true } = options;
 
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (ignoreInputs) {
         const tag = (e.target as HTMLElement)?.tagName;
@@ -23,11 +25,11 @@ export function useKeyboardShortcut(options: Options, callback: () => void) {
       if (shift && !e.shiftKey) return;
       if (e.key === key) {
         e.preventDefault();
-        callback();
+        callbackRef.current();
       }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [options, callback]);
+  }, [key, ctrl, meta, shift, ignoreInputs]);
 }

@@ -24,7 +24,7 @@ export function SummaryView() {
             Source Study Notes
           </span>
           <span className="text-xs text-muted-foreground font-mono">
-            {currentSession.sampleNotes.length} characters
+            {currentSession.sampleNotes?.length ?? 0} characters
           </span>
         </div>
         <div className="whitespace-pre-line text-xs font-mono leading-relaxed text-foreground/90 bg-secondary/30 p-4 rounded-xl border border-border/40">

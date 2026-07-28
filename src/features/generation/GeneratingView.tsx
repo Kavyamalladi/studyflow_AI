@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { useStudyStore } from '@/store/study.store';
 
 const STEPS = [
@@ -11,11 +12,16 @@ const STEPS = [
 ] as const;
 
 export function GeneratingView() {
-  const finishGeneration = useStudyStore((s) => s.finishGeneration);
+  const isGenerating = useStudyStore((s) => s.isGenerating);
+  const generationError = useStudyStore((s) => s.generationError);
+  const beginGeneration = useStudyStore((s) => s.beginGeneration);
+  const cancelGeneration = useStudyStore((s) => s.cancelGeneration);
+
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    if (!isGenerating) return;
     let mounted = true;
     let accumulated = 0;
     const totalDuration = STEPS.reduce((sum, s) => sum + s.duration, 0);
@@ -26,7 +32,6 @@ export function GeneratingView() {
         setStepIndex(i);
 
         const start = accumulated;
-        const end = accumulated + STEPS[i].duration;
         const stepDuration = STEPS[i].duration;
         const startTime = performance.now();
 
@@ -36,34 +41,75 @@ export function GeneratingView() {
             const elapsed = now - startTime;
             const frac = Math.min(elapsed / stepDuration, 1);
             const p = ((start + frac * stepDuration) / totalDuration) * 100;
-            setProgress(p);
+            setProgress(Math.min(p, 95));
             if (frac < 1) requestAnimationFrame(tick);
             else resolve();
           };
           requestAnimationFrame(tick);
         });
 
-        accumulated = end;
+        accumulated += stepDuration;
       }
 
       if (mounted) {
-        setProgress(100);
-        await new Promise((r) => setTimeout(r, 350));
-        finishGeneration();
+        setProgress(95);
       }
     };
 
+    setProgress(0);
+    setStepIndex(0);
     run();
     return () => { mounted = false; };
-  }, [finishGeneration]);
+  }, [isGenerating]);
 
+  // ── Error state ──
+  if (generationError) {
+    return (
+      <div className="flex h-full items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm text-center space-y-6"
+        >
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[rgba(239,68,68,0.12)]">
+            <AlertCircle className="size-7 text-[#ef4444]" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-[17px] font-semibold text-white">Generation failed</h2>
+            <p className="text-[13px] leading-relaxed text-[var(--color-muted)]">{generationError}</p>
+          </div>
+
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={cancelGeneration}
+              className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-3 text-[13px] font-medium text-[var(--color-muted)] transition-colors hover:border-[var(--color-input)] hover:text-[var(--color-foreground)]"
+            >
+              <ArrowLeft className="size-4" />
+              Go back
+            </button>
+            <button
+              type="button"
+              onClick={beginGeneration}
+              className="flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-5 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)] shadow-[0_0_0_1px_rgba(139,92,246,0.3)]"
+            >
+              <RefreshCw className="size-4" />
+              Try again
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ── Loading state ──
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-10 text-center">
 
         {/* Animated logo orb */}
         <div className="relative mx-auto size-20">
-          {/* Pulsing rings */}
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
@@ -78,14 +124,12 @@ export function GeneratingView() {
               }}
             />
           ))}
-          {/* Core */}
           <motion.div
             className="absolute inset-0 rounded-full bg-primary"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             style={{ boxShadow: '0 0 32px rgba(139,92,246,0.6), 0 0 64px rgba(139,92,246,0.3)' }}
           />
-          {/* Inner glow */}
           <div className="absolute inset-2 rounded-full bg-[rgba(255,255,255,0.15)]" />
         </div>
 

@@ -9,15 +9,34 @@ const env = getEnv();
 const app = express();
 
 app.use(cors({ origin: env.CORS_ORIGIN }));
-app.use(express.json());
+app.use(express.json({ limit: '8kb' }));
 
 app.use(healthRouter);
 app.use('/api', generateRouter);
 
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, () => {
   console.log(`[server] listening on http://localhost:${env.PORT}`);
+});
+
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`[server] Port ${env.PORT} is already in use.`);
+    process.exit(1);
+  }
+  console.error('[server]', err.message);
+  process.exit(1);
+});
+
+process.on('SIGTERM', () => {
+  console.log('[server] SIGTERM received — shutting down');
+  server.close(() => process.exit(0));
+});
+
+process.on('SIGINT', () => {
+  console.log('[server] SIGINT received — shutting down');
+  server.close(() => process.exit(0));
 });
 
 export default app;

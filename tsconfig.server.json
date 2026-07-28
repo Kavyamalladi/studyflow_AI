@@ -11,7 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "declaration": true
+    "declaration": true,
+    "types": ["node"]
   },
   "include": ["server/**/*"],
   "exclude": ["node_modules", "dist"]

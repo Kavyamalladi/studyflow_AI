@@ -15,13 +15,14 @@ export function ProgressRing({
   strokeWidth = 6,
   progress,
   color = '#8b5cf6',
-  trackColor = 'rgba(255,255,255,0.06)',
+  trackColor = 'var(--color-border)',
   children,
   className,
 }: Props) {
+  const clamped = Math.max(0, Math.min(100, progress));
   const r = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * r;
-  const offset = circumference - (progress / 100) * circumference;
+  const offset = circumference - (clamped / 100) * circumference;
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className ?? ''}`} style={{ width: size, height: size }}>

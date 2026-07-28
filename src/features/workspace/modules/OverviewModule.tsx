@@ -43,10 +43,10 @@ export function OverviewModule() {
       {/* ── Title Row ── */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[12px] font-medium uppercase tracking-wider text-[#a1a1aa]">
+          <p className="text-[12px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
             {session.category}
           </p>
-          <h1 className="mt-1 text-[28px] font-bold tracking-tight text-white leading-tight">
+          <h1 className="mt-1 text-[28px] font-bold tracking-tight text-[var(--color-foreground)] leading-tight">
             {session.name}
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -58,17 +58,17 @@ export function OverviewModule() {
               {diff.label}
             </span>
             {/* Time */}
-            <div className="flex items-center gap-1.5 text-[13px] text-[#a1a1aa]">
+            <div className="flex items-center gap-1.5 text-[13px] text-[var(--color-muted)]">
               <Clock className="size-3.5" />
               {session.estimatedMinutes} min
             </div>
             {/* Cards */}
-            <div className="flex items-center gap-1.5 text-[13px] text-[#a1a1aa]">
+            <div className="flex items-center gap-1.5 text-[13px] text-[var(--color-muted)]">
               <Layers className="size-3.5" />
               {session.flashcards.length} cards
             </div>
             {/* Questions */}
-            <div className="flex items-center gap-1.5 text-[13px] text-[#a1a1aa]">
+            <div className="flex items-center gap-1.5 text-[13px] text-[var(--color-muted)]">
               <CheckCircle className="size-3.5" />
               {session.quizQuestions.length} questions
             </div>
@@ -78,8 +78,8 @@ export function OverviewModule() {
         {/* Progress ring */}
         <ProgressRing size={80} strokeWidth={6} progress={progress} className="shrink-0 sm:mt-1">
           <div className="text-center">
-            <span className="block text-[16px] font-bold text-white">{progress}%</span>
-            <span className="block text-[9px] text-[#71717a] uppercase tracking-wide">done</span>
+            <span className="block text-[16px] font-bold text-[var(--color-foreground)]">{progress}%</span>
+            <span className="block text-[9px] text-[var(--color-muted-foreground)] uppercase tracking-wide">done</span>
           </div>
         </ProgressRing>
       </div>
@@ -87,10 +87,10 @@ export function OverviewModule() {
       {/* ── Progress bar ── */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-[#a1a1aa]">Session progress</span>
-          <span className="text-[12px] font-semibold text-white">{progress}%</span>
+          <span className="text-[12px] text-[var(--color-muted)]">Session progress</span>
+          <span className="text-[12px] font-semibold text-[var(--color-foreground)]">{progress}%</span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
           <motion.div
             className="h-full rounded-full bg-[#8b5cf6]"
             initial={{ width: 0 }}
@@ -110,14 +110,14 @@ export function OverviewModule() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i * 0.05 }}
-            className="group flex flex-col items-start gap-3 rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#18181b] p-5 text-left transition-all duration-200 hover:border-[rgba(139,92,246,0.35)] hover:bg-[rgba(139,92,246,0.05)] hover:shadow-[0_0_0_1px_rgba(139,92,246,0.15)]"
+            className="group flex flex-col items-start gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-left transition-all duration-200 hover:border-[rgba(139,92,246,0.35)] hover:bg-[rgba(139,92,246,0.05)] hover:shadow-[0_0_0_1px_rgba(139,92,246,0.15)]"
           >
             <div className="flex size-9 items-center justify-center rounded-xl bg-[rgba(139,92,246,0.1)] transition-colors group-hover:bg-[rgba(139,92,246,0.2)]">
               <Icon className="size-4 text-[#8b5cf6]" />
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-white">{label}</p>
-              <p className="text-[11px] text-[#71717a]">{desc}</p>
+              <p className="text-[13px] font-semibold text-[var(--color-foreground)]">{label}</p>
+              <p className="text-[11px] text-[var(--color-muted-foreground)]">{desc}</p>
             </div>
           </motion.button>
         ))}
@@ -127,10 +127,10 @@ export function OverviewModule() {
       <div className="grid gap-4 lg:grid-cols-5">
 
         {/* Learning Objectives — takes 3 cols */}
-        <div className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#18181b] p-6 lg:col-span-3">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 lg:col-span-3">
           <div className="mb-4 flex items-center gap-2">
             <Target className="size-4 text-[#8b5cf6]" />
-            <h2 className="text-[14px] font-semibold text-white">Learning Objectives</h2>
+            <h2 className="text-[14px] font-semibold text-[var(--color-foreground)]">Learning Objectives</h2>
           </div>
           <ul className="space-y-3">
             {session.learningObjectives.map((obj, i) => (
@@ -144,7 +144,7 @@ export function OverviewModule() {
                 <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-[rgba(139,92,246,0.35)] text-[11px] font-bold text-[#8b5cf6]">
                   {i + 1}
                 </div>
-                <p className="text-[13px] leading-relaxed text-[#a1a1aa]">{obj}</p>
+                <p className="text-[13px] leading-relaxed text-[var(--color-muted)]">{obj}</p>
               </motion.li>
             ))}
           </ul>
@@ -154,36 +154,36 @@ export function OverviewModule() {
         <div className="flex flex-col gap-4 lg:col-span-2">
 
           {/* Weak Topics */}
-          <div className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#18181b] p-5">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
             <div className="mb-3 flex items-center gap-2">
               <Flame className="size-4 text-[#f59e0b]" />
-              <h2 className="text-[14px] font-semibold text-white">Needs Review</h2>
+              <h2 className="text-[14px] font-semibold text-[var(--color-foreground)]">Needs Review</h2>
             </div>
             <ul className="space-y-2">
               {MOCK_WEAK_TOPICS.map((topic, i) => (
                 <li key={i} className="flex items-center gap-2">
                   <span className="size-1.5 rounded-full bg-[#f59e0b]" />
-                  <span className="text-[13px] text-[#a1a1aa]">{topic}</span>
+                  <span className="text-[13px] text-[var(--color-muted)]">{topic}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Recent Activity */}
-          <div className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#18181b] p-5">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
             <div className="mb-3 flex items-center gap-2">
               <TrendingUp className="size-4 text-[#8b5cf6]" />
-              <h2 className="text-[14px] font-semibold text-white">Activity</h2>
+              <h2 className="text-[14px] font-semibold text-[var(--color-foreground)]">Activity</h2>
             </div>
             <ul className="space-y-3">
               {MOCK_RECENT.map(({ label, time, icon: Icon }, i) => (
                 <li key={i} className="flex items-start gap-2.5">
-                  <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-[rgba(255,255,255,0.04)]">
-                    <Icon className="size-3.5 text-[#71717a]" />
+                  <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-[var(--color-border)]">
+                    <Icon className="size-3.5 text-[var(--color-muted-foreground)]" />
                   </div>
                   <div>
-                    <p className="text-[12px] text-[#a1a1aa]">{label}</p>
-                    <p className="text-[11px] text-[#71717a]">{time}</p>
+                    <p className="text-[12px] text-[var(--color-muted)]">{label}</p>
+                    <p className="text-[11px] text-[var(--color-muted-foreground)]">{time}</p>
                   </div>
                 </li>
               ))}
@@ -193,12 +193,12 @@ export function OverviewModule() {
       </div>
 
       {/* About */}
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#18181b] p-6">
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
         <div className="mb-2 flex items-center gap-2">
           <BarChart2 className="size-4 text-[#8b5cf6]" />
-          <h2 className="text-[14px] font-semibold text-white">About This Session</h2>
+          <h2 className="text-[14px] font-semibold text-[var(--color-foreground)]">About This Session</h2>
         </div>
-        <p className="text-[14px] leading-relaxed text-[#a1a1aa]">{session.description}</p>
+        <p className="text-[14px] leading-relaxed text-[var(--color-muted)]">{session.description}</p>
       </div>
     </div>
   );

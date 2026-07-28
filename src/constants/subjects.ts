@@ -1,9 +1,9 @@
 export interface SubjectContent {
-  id: string;
+  id?: string;
   name: string;
   category: string;
   description: string;
-  sampleNotes: string;
+  sampleNotes?: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   estimatedMinutes: number;
   learningObjectives: string[];

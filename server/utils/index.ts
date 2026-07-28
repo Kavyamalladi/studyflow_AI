@@ -1,1 +1,1 @@
-/** Server utility helpers — populated in later milestones. */
+export { getEnv, type ServerEnv } from './env.js';

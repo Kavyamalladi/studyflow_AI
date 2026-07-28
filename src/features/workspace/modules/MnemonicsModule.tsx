@@ -16,7 +16,7 @@ export function MnemonicsModule() {
         {session.mnemonics.map((m, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-surface p-6 space-y-4"
+            className="rounded-2xl border border-[var(--color-border)] bg-surface p-6 space-y-4"
           >
             {/* Title */}
             <div className="flex items-center gap-2">
@@ -28,7 +28,7 @@ export function MnemonicsModule() {
 
             {/* Acronym */}
             <div className="rounded-xl border border-[rgba(139,92,246,0.2)] bg-[rgba(139,92,246,0.06)] p-4">
-              <p className="text-center font-mono text-[22px] font-bold tracking-[0.15em] text-primary">
+              <p className="text-center font-mono text-[22px] font-bold tracking-[0.15em] text-primary break-words">
                 {m.acronymOrPhrase}
               </p>
             </div>
@@ -40,7 +40,7 @@ export function MnemonicsModule() {
                   <span className="mt-0.5 shrink-0 font-mono text-[13px] font-bold text-primary">
                     {line.split('—')[0].trim()}
                   </span>
-                  <span className="t-body text-muted">
+                  <span className="t-body text-muted break-words min-w-0">
                     {line.includes('—') ? line.split('—').slice(1).join('—').trim() : ''}
                   </span>
                 </li>
@@ -49,7 +49,7 @@ export function MnemonicsModule() {
 
             {/* Explanation */}
             {m.explanation && (
-              <p className="t-caption border-t border-[rgba(255,255,255,0.06)] pt-3 text-muted-foreground">
+              <p className="t-caption border-t border-[var(--color-border)] pt-3 text-muted-foreground">
                 {m.explanation}
               </p>
             )}

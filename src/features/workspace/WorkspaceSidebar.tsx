@@ -14,19 +14,19 @@ export function WorkspaceSidebar() {
   return (
     <aside
       className={cn(
-        'relative flex flex-col border-r border-[rgba(255,255,255,0.07)] bg-[#111015] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+        'relative flex flex-col border-r border-[var(--color-border)] bg-[var(--color-secondary)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
         isSidebarOpen ? 'w-56' : 'w-14',
       )}
     >
       {/* Top: logo + collapse */}
-      <div className={cn('flex h-14 items-center border-b border-[rgba(255,255,255,0.07)]', isSidebarOpen ? 'justify-between px-4' : 'justify-center')}>
+      <div className={cn('flex h-14 items-center border-b border-[var(--color-border)]', isSidebarOpen ? 'justify-between px-4' : 'justify-center')}>
         {isSidebarOpen && (
-          <span className="text-[13px] font-semibold tracking-tight text-foreground">StudyFlow AI</span>
+          <span className="text-[13px] font-semibold tracking-tight text-[var(--color-foreground)]">StudyFlow AI</span>
         )}
         <button
           type="button"
           onClick={toggleSidebar}
-          className="flex size-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground"
+          className="flex size-8 items-center justify-center rounded-lg text-[var(--color-muted)] transition-colors hover:bg-[var(--color-input)] hover:text-[var(--color-foreground)]"
           aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           {isSidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
@@ -35,14 +35,14 @@ export function WorkspaceSidebar() {
 
       {/* Session info */}
       {isSidebarOpen && session && (
-        <div className="border-b border-[rgba(255,255,255,0.07)] px-4 py-3">
-          <p className="truncate text-[12px] font-medium text-muted-foreground">Current session</p>
-          <p className="mt-0.5 truncate text-[13px] font-semibold text-foreground">{session.name}</p>
+        <div className="border-b border-[var(--color-border)] px-4 py-3">
+          <p className="truncate text-[12px] font-medium text-[var(--color-muted-foreground)]">Current session</p>
+          <p className="mt-0.5 truncate text-[13px] font-semibold text-[var(--color-foreground)]">{session.name}</p>
           <div className="mt-1.5 flex items-center gap-2">
-            <span className="rounded-full bg-[rgba(139,92,246,0.15)] px-2 py-0.5 text-[11px] font-medium text-primary">
+            <span className="rounded-full bg-[rgba(139,92,246,0.15)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-primary)]">
               {session.difficulty}
             </span>
-            <span className="text-[11px] text-muted-foreground">{session.estimatedMinutes}m</span>
+            <span className="text-[11px] text-[var(--color-muted-foreground)]">{session.estimatedMinutes}m</span>
           </div>
         </div>
       )}
@@ -62,21 +62,20 @@ export function WorkspaceSidebar() {
                 'group flex w-full items-center gap-3 px-3 py-2.5 transition-all duration-150',
                 isSidebarOpen ? 'px-4' : 'justify-center px-0',
                 isActive
-                  ? 'bg-[rgba(139,92,246,0.1)] text-primary'
-                  : 'text-muted hover:bg-[rgba(255,255,255,0.04)] hover:text-foreground',
+                  ? 'bg-[rgba(139,92,246,0.1)] text-[var(--color-primary)]'
+                  : 'text-[var(--color-muted)] hover:bg-[var(--color-input)] hover:text-[var(--color-foreground)]',
               )}
             >
-              <div className={cn('relative flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors', isActive ? 'bg-[rgba(139,92,246,0.2)]' : 'group-hover:bg-[rgba(255,255,255,0.06)]')}>
+              <div className={cn('relative flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors', isActive ? 'bg-[rgba(139,92,246,0.2)]' : 'group-hover:bg-[var(--color-input)]')}>
                 <Icon className="size-4" />
-                {/* Active indicator */}
                 {isActive && (
-                  <span className="absolute -left-2 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
+                  <span className="absolute -left-2 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-[var(--color-primary)]" />
                 )}
               </div>
               {isSidebarOpen && (
                 <div className="min-w-0 text-left">
                   <p className="text-[13px] font-medium leading-none">{item.label}</p>
-                  <p className={cn('mt-0.5 text-[11px]', isActive ? 'text-primary/70' : 'text-muted-foreground')}>{item.description}</p>
+                  <p className={cn('mt-0.5 text-[11px]', isActive ? 'text-[var(--color-primary)]/70' : 'text-[var(--color-muted-foreground)]')}>{item.description}</p>
                 </div>
               )}
             </button>
@@ -85,13 +84,13 @@ export function WorkspaceSidebar() {
       </nav>
 
       {/* Back to home */}
-      <div className="border-t border-[rgba(255,255,255,0.07)] p-2">
+      <div className="border-t border-[var(--color-border)] p-2">
         <button
           type="button"
           onClick={returnHome}
           title={!isSidebarOpen ? 'New session' : undefined}
           className={cn(
-            'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground',
+            'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[var(--color-muted)] transition-colors hover:bg-[var(--color-input)] hover:text-[var(--color-foreground)]',
             !isSidebarOpen && 'justify-center px-0',
           )}
         >

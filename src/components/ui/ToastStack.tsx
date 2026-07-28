@@ -1,8 +1,6 @@
-import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
 import { useStudyStore, type Toast } from '@/store/study.store';
-import { cn } from '@/utils';
 
 const CONFIG: Record<Toast['type'], { icon: React.ElementType; color: string; bg: string; border: string }> = {
   success: {
@@ -27,7 +25,7 @@ const CONFIG: Record<Toast['type'], { icon: React.ElementType; color: string; bg
 
 function ToastItem({ toast }: { toast: Toast }) {
   const removeToast = useStudyStore((s) => s.removeToast);
-  const { icon: Icon, color, bg, border } = CONFIG[toast.type];
+  const { icon: Icon, color, border } = CONFIG[toast.type];
 
   return (
     <motion.div
@@ -38,15 +36,15 @@ function ToastItem({ toast }: { toast: Toast }) {
       transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
       role="alert"
       aria-live="polite"
-      className="flex w-72 items-start gap-3 rounded-xl border px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-      style={{ background: 'rgba(24,24,27,0.95)', backdropFilter: 'blur(12px)', borderColor: border }}
+      className="flex w-72 items-start gap-3 rounded-xl border px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+      style={{ background: 'var(--color-surface)', backdropFilter: 'blur(12px)', borderColor: border, opacity: 0.98 }}
     >
       <Icon className="mt-0.5 size-4 shrink-0" style={{ color }} />
-      <p className="flex-1 text-[13px] font-medium leading-snug text-white">{toast.message}</p>
+      <p className="flex-1 text-[13px] font-medium leading-snug text-[var(--color-foreground)]">{toast.message}</p>
       <button
         type="button"
         onClick={() => removeToast(toast.id)}
-        className="shrink-0 text-[#71717a] transition-colors hover:text-white"
+        className="shrink-0 text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-foreground)]"
         aria-label="Dismiss"
       >
         <X className="size-3.5" />

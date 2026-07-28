@@ -8,24 +8,24 @@ interface ThemeState {
   setTheme: (theme: Theme) => void;
 }
 
-export function applyTheme(theme: Theme) {
-  const root = document.documentElement;
-  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const isDark = theme === 'dark' || (theme === 'system' && systemDark);
-  root.classList.toggle('dark', isDark);
+const SYSTEM_QUERY = '(prefers-color-scheme: dark)';
+
+function resolveTheme(theme: Theme): 'light' | 'dark' {
+  if (theme === 'dark') return 'dark';
+  if (theme === 'light') return 'light';
+  return window.matchMedia(SYSTEM_QUERY).matches ? 'dark' : 'light';
 }
 
-const systemThemeQuery = '(prefers-color-scheme: dark)';
-
-export function subscribeSystemTheme(onStoreChange: () => void) {
-  const media = window.matchMedia(systemThemeQuery);
-  const handler = () => onStoreChange();
-  media.addEventListener('change', handler);
-  return () => media.removeEventListener('change', handler);
+export function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  const resolved = resolveTheme(theme);
+  const isDark = resolved === 'dark';
+  root.classList.toggle('dark', isDark);
+  root.classList.toggle('light', !isDark);
 }
 
 export function getSystemTheme(): 'light' | 'dark' {
-  return window.matchMedia(systemThemeQuery).matches ? 'dark' : 'light';
+  return resolveTheme('system');
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -46,15 +46,21 @@ export const useThemeStore = create<ThemeState>()(
   ),
 );
 
-let themeInitialized = false;
-
 export function initTheme() {
-  if (themeInitialized) return;
-  themeInitialized = true;
+  const stored = (() => {
+    try {
+      const raw = localStorage.getItem('studyflow-theme');
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      return (data?.state?.theme as Theme) ?? null;
+    } catch {
+      return null;
+    }
+  })();
 
-  applyTheme(useThemeStore.getState().theme);
+  applyTheme(stored ?? 'system');
 
-  window.matchMedia(systemThemeQuery).addEventListener('change', () => {
+  window.matchMedia(SYSTEM_QUERY).addEventListener('change', () => {
     if (useThemeStore.getState().theme === 'system') {
       applyTheme('system');
     }

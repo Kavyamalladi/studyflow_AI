@@ -99,11 +99,11 @@ export function HomeView() {
         {/* ── Logo + headline ── */}
         <div className="space-y-3 text-center">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(139,92,246,0.25)] bg-[rgba(139,92,246,0.07)] px-3 py-1">
-            <Sparkles className="size-3 text-[#8b5cf6]" />
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8b5cf6]">AI Study Workspace</span>
+            <Sparkles className="size-3 text-[var(--color-primary)]" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-primary)]">AI Study Workspace</span>
           </div>
-          <h1 className="text-[32px] font-bold tracking-[-0.03em] text-white">StudyFlow AI</h1>
-          <p className="mx-auto max-w-xs text-[14px] leading-relaxed text-[#a1a1aa]">
+          <h1 className="text-[32px] font-bold tracking-[-0.03em] text-[var(--color-foreground)]">StudyFlow AI</h1>
+          <p className="mx-auto max-w-xs text-[14px] leading-relaxed text-[var(--color-muted)]">
             Paste your notes and instantly generate an interactive study workspace.
           </p>
         </div>
@@ -118,14 +118,14 @@ export function HomeView() {
               className="overflow-hidden"
             >
               <div className="flex items-center gap-3 rounded-xl border border-[rgba(139,92,246,0.2)] bg-[rgba(139,92,246,0.06)] px-4 py-2.5">
-                <RotateCcw className="size-3.5 shrink-0 text-[#8b5cf6]" />
-                <p className="flex-1 text-[12px] text-[#a1a1aa]">
-                  Draft restored from <span className="text-white">{timeAgo(autosavedAt!)}</span>
+                <RotateCcw className="size-3.5 shrink-0 text-[var(--color-primary)]" />
+                <p className="flex-1 text-[12px] text-[var(--color-muted)]">
+                  Draft restored from <span className="text-[var(--color-foreground)]">{timeAgo(autosavedAt!)}</span>
                 </p>
                 <button
                   type="button"
                   onClick={() => setDraftBannerDismissed(true)}
-                  className="text-[#71717a] transition-colors hover:text-white"
+                  className="text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-foreground)]"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -142,10 +142,10 @@ export function HomeView() {
           className={cn(
             'relative rounded-2xl border transition-all duration-200',
             isDragging
-              ? 'border-[#8b5cf6] bg-[rgba(139,92,246,0.06)] shadow-[0_0_0_2px_rgba(139,92,246,0.2)]'
+              ? 'border-[var(--color-primary)] bg-[rgba(139,92,246,0.06)] shadow-[0_0_0_2px_rgba(139,92,246,0.2)]'
               : notes
-                ? 'border-[rgba(255,255,255,0.1)] bg-[#18181b] focus-within:border-[rgba(139,92,246,0.4)] focus-within:shadow-[0_0_0_2px_rgba(139,92,246,0.1)]'
-                : 'border-[rgba(255,255,255,0.07)] bg-[#18181b] hover:border-[rgba(255,255,255,0.12)]',
+                ? 'border-[var(--color-input)] bg-[var(--color-surface)] focus-within:border-[rgba(139,92,246,0.4)] focus-within:shadow-[0_0_0_2px_rgba(139,92,246,0.1)]'
+                : 'border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-input)]',
           )}
         >
           {/* Drag overlay */}
@@ -155,11 +155,11 @@ export function HomeView() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-[rgba(9,9,11,0.8)] backdrop-blur-sm"
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-[var(--color-background)]/80 backdrop-blur-sm"
               >
-                <Upload className="size-8 text-[#8b5cf6]" />
-                <p className="text-[14px] font-semibold text-white">Drop to import</p>
-                <p className="text-[12px] text-[#a1a1aa]">Supports .txt, .md, .pdf</p>
+                <Upload className="size-8 text-[var(--color-primary)]" />
+                <p className="text-[14px] font-semibold text-[var(--color-foreground)]">Drop to import</p>
+                <p className="text-[12px] text-[var(--color-muted)]">Supports .txt, .md, .pdf</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -171,13 +171,13 @@ export function HomeView() {
             onKeyDown={handleKeyDown}
             rows={8}
             placeholder={`Paste your lecture notes, textbook excerpt, or study topic here…\n\nExample:\n  Process Synchronization — Critical Section Problem\n  • Mutual Exclusion: only one process in CS at a time\n  • Progress: selection cannot be postponed indefinitely\n  • Bounded Waiting: limit on how many times others enter CS`}
-            className="w-full resize-none rounded-2xl bg-transparent px-5 py-4 text-[14px] leading-relaxed text-white placeholder:text-[#3f3f46] focus:outline-none"
+            className="w-full resize-none rounded-2xl bg-transparent px-5 py-4 text-[14px] leading-relaxed text-[var(--color-foreground)] placeholder:text-[var(--color-muted-foreground)] focus:outline-none"
             aria-label="Study notes input"
             spellCheck={false}
           />
 
           {/* Bottom bar */}
-          <div className="flex items-center justify-between border-t border-[rgba(255,255,255,0.05)] px-4 py-2.5">
+          <div className="flex items-center justify-between border-t border-[var(--color-border)] px-4 py-2.5">
             <div className="flex items-center gap-1.5">
               <input
                 ref={fileRef}
@@ -189,7 +189,7 @@ export function HomeView() {
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] text-[#71717a] transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-white"
+                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-input)] hover:text-[var(--color-foreground)]"
               >
                 <Upload className="size-3.5" />
                 Import file
@@ -198,7 +198,7 @@ export function HomeView() {
                 <button
                   type="button"
                   onClick={clearNotes}
-                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] text-[#71717a] transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-[#ef4444]"
+                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-input)] hover:text-[var(--color-destructive)]"
                 >
                   <X className="size-3.5" />
                   Clear
@@ -209,14 +209,14 @@ export function HomeView() {
             <div className="flex items-center gap-3">
               <span className={cn(
                 'tabular-nums text-[12px]',
-                notes.length > MAX_CHARS * 0.9 ? 'text-[#f59e0b]' : 'text-[#52525b]',
+                notes.length > MAX_CHARS * 0.9 ? 'text-[var(--color-warning)]' : 'text-[var(--color-muted-foreground)]',
               )}>
                 {notes.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
               </span>
               <button
                 type="button"
                 onClick={() => setShortcutsOpen(true)}
-                className="hidden items-center gap-1 text-[11px] text-[#52525b] transition-colors hover:text-[#a1a1aa] sm:flex"
+                className="hidden items-center gap-1 text-[11px] text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-muted)] sm:flex"
               >
                 <kbd className="kbd">⌘</kbd>
                 <kbd className="kbd">↵</kbd>
@@ -228,22 +228,22 @@ export function HomeView() {
 
         {/* ── Subject chips ── */}
         <div className="space-y-2.5">
-          <p className="text-center text-[11px] font-medium uppercase tracking-wider text-[#52525b]">
+          <p className="text-center text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted-foreground)]">
             Or start from a subject
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            {SUBJECT_CHIPS_SHOWN.map((subject) => {
+              {SUBJECT_CHIPS_SHOWN.map((subject) => {
               const isSelected = selectedSubjectId === subject.id;
               return (
                 <button
                   key={subject.id}
                   type="button"
-                  onClick={() => selectSubject(subject.id)}
+                  onClick={() => selectSubject(subject.id!)}
                   className={cn(
                     'rounded-xl border px-3.5 py-2 text-[13px] font-medium transition-all duration-150',
                     isSelected
-                      ? 'border-[#8b5cf6] bg-[rgba(139,92,246,0.12)] text-[#8b5cf6] shadow-[0_0_0_1px_rgba(139,92,246,0.2)]'
-                      : 'border-[rgba(255,255,255,0.07)] bg-[#18181b] text-[#a1a1aa] hover:border-[rgba(255,255,255,0.14)] hover:text-white',
+                      ? 'border-[var(--color-primary)] bg-[rgba(139,92,246,0.12)] text-[var(--color-primary)] shadow-[0_0_0_1px_rgba(139,92,246,0.2)]'
+                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)] hover:border-[var(--color-input)] hover:text-[var(--color-foreground)]',
                   )}
                 >
                   {subject.name}
@@ -262,8 +262,8 @@ export function HomeView() {
             className={cn(
               'group inline-flex h-11 items-center gap-2.5 rounded-xl px-7 text-[14px] font-semibold transition-all duration-200',
               canGenerate
-                ? 'bg-[#8b5cf6] text-white hover:bg-[#7c3aed] shadow-[0_0_0_1px_rgba(139,92,246,0.4),0_4px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_0_1px_rgba(139,92,246,0.5),0_8px_28px_rgba(139,92,246,0.4)] active:scale-[0.98]'
-                : 'cursor-not-allowed bg-[rgba(255,255,255,0.05)] text-[#52525b]',
+                ? 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] shadow-[0_0_0_1px_rgba(139,92,246,0.4),0_4px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_0_1px_rgba(139,92,246,0.5),0_8px_28px_rgba(139,92,246,0.4)] active:scale-[0.98]'
+                : 'cursor-not-allowed bg-[var(--color-input)] text-[var(--color-muted-foreground)]',
             )}
           >
             Generate study workspace
@@ -273,8 +273,8 @@ export function HomeView() {
 
         {/* ── Recent sessions ── */}
         {recentSessions.length > 0 && (
-          <div className="space-y-2.5 border-t border-[rgba(255,255,255,0.06)] pt-6">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#52525b]">
+          <div className="space-y-2.5 border-t border-[var(--color-border)] pt-6">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted-foreground)]">
               Recent sessions
             </p>
             <div className="space-y-1.5">
@@ -285,19 +285,19 @@ export function HomeView() {
                   onClick={() => restoreSession(session)}
                   whileHover={{ x: 2 }}
                   transition={{ duration: 0.12 }}
-                  className="group flex w-full items-center gap-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#18181b] px-4 py-3 text-left transition-colors hover:border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.03)]"
+                  className="group flex w-full items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:border-[var(--color-input)] hover:bg-[var(--color-card)]"
                 >
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[rgba(255,255,255,0.04)]">
-                    <FileText className="size-4 text-[#71717a]" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-input)]">
+                    <FileText className="size-4 text-[var(--color-muted-foreground)]" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-[13px] font-medium text-white">{session.name}</span>
-                      <span className={cn('size-1.5 shrink-0 rounded-full', DIFFICULTY_DOT[session.difficulty] ?? 'bg-[#71717a]')} />
+                      <span className="truncate text-[13px] font-medium text-[var(--color-foreground)]">{session.name}</span>
+                      <span className={cn('size-1.5 shrink-0 rounded-full', DIFFICULTY_DOT[session.difficulty] ?? 'bg-[var(--color-muted-foreground)]')} />
                     </div>
-                    <p className="text-[11px] text-[#52525b]">{session.category}</p>
+                    <p className="text-[11px] text-[var(--color-muted-foreground)]">{session.category}</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-[#52525b]">
+                  <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-[var(--color-muted-foreground)]">
                     <Clock className="size-3" />
                     {timeAgo(session.timestamp)}
                   </div>

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { SUBJECT_CHIPS, type SubjectContent } from '@/constants/subjects';
+import { generateStudyContent } from '@/services/api';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,6 @@ export interface RecentSession {
 }
 
 export interface FlashcardProgress {
-  /** Map of card id → confidence rating */
   confidence: Record<string, 'easy' | 'hard' | 'skip'>;
   seenCount: number;
 }
@@ -43,56 +43,37 @@ export interface QuizProgress {
 // ── State ────────────────────────────────────────────────────────────────────
 
 interface StudyState {
-  // Editor
   notes: string;
   selectedSubjectId: string | null;
   autosavedAt: number | null;
-
-  // App view
   view: 'home' | 'generating' | 'workspace';
-
-  // Session
+  isGenerating: boolean;
+  generationError: string | null;
   currentSession: SubjectContent | null;
   activeTab: WorkspaceTab;
   tabHistory: WorkspaceTab[];
   isSidebarOpen: boolean;
-
-  // Session progress (live, per-session)
   flashcardProgress: FlashcardProgress;
   quizProgress: QuizProgress | null;
-
-  // Persistence
   recentSessions: RecentSession[];
-
-  // UI
   toasts: Toast[];
   isShortcutsOpen: boolean;
 
-  // Actions — Editor
   setNotes: (notes: string) => void;
   selectSubject: (subjectId: string) => void;
   clearNotes: () => void;
-
-  // Actions — Session flow
   beginGeneration: () => void;
-  finishGeneration: () => void;
+  finishGeneration: (apiData?: SubjectContent, subjectIdOverride?: string | null) => void;
+  cancelGeneration: () => void;
   returnHome: () => void;
-
-  // Actions — Workspace nav
   setActiveTab: (tab: WorkspaceTab) => void;
   goBack: () => void;
   toggleSidebar: () => void;
-
-  // Actions — Progress
   recordFlashcardConfidence: (cardId: string, confidence: 'easy' | 'hard' | 'skip') => void;
   recordQuizComplete: (score: number, total: number) => void;
   resetProgress: () => void;
-
-  // Actions — Toasts
   addToast: (message: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
-
-  // Actions — UI
   setShortcutsOpen: (open: boolean) => void;
 }
 
@@ -101,6 +82,7 @@ interface StudyState {
 const STORAGE_KEY_RECENT  = 'sf_recent_sessions';
 const STORAGE_KEY_DRAFT   = 'sf_draft_notes';
 const STORAGE_KEY_SUBJECT = 'sf_draft_subject';
+const STORAGE_KEY_TS      = 'sf_draft_ts';
 
 function loadRecentSessions(): RecentSession[] {
   try {
@@ -117,33 +99,46 @@ function saveRecentSessions(sessions: RecentSession[]) {
   } catch { /* ignore storage errors */ }
 }
 
-export function loadDraft(): { notes: string; subjectId: string | null } {
+export function loadDraft(): { notes: string; subjectId: string | null; timestamp: number | null } {
   try {
-    return {
-      notes:     localStorage.getItem(STORAGE_KEY_DRAFT)   ?? '',
-      subjectId: localStorage.getItem(STORAGE_KEY_SUBJECT) ?? null,
-    };
+    const notes = localStorage.getItem(STORAGE_KEY_DRAFT) ?? '';
+    const subjectId = localStorage.getItem(STORAGE_KEY_SUBJECT) ?? null;
+    const ts = localStorage.getItem(STORAGE_KEY_TS);
+    return { notes, subjectId, timestamp: ts ? parseInt(ts, 10) : null };
   } catch {
-    return { notes: '', subjectId: null };
+    return { notes: '', subjectId: null, timestamp: null };
   }
 }
 
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+function cancelAutosave() {
+  if (autosaveTimer) {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = null;
+  }
+}
+
 function scheduleDraftSave(notes: string, subjectId: string | null) {
-  if (autosaveTimer) clearTimeout(autosaveTimer);
+  cancelAutosave();
   autosaveTimer = setTimeout(() => {
     try {
       localStorage.setItem(STORAGE_KEY_DRAFT, notes);
-      if (subjectId) localStorage.setItem(STORAGE_KEY_SUBJECT, subjectId);
-      else           localStorage.removeItem(STORAGE_KEY_SUBJECT);
+      if (subjectId) {
+        localStorage.setItem(STORAGE_KEY_SUBJECT, subjectId);
+      } else {
+        localStorage.removeItem(STORAGE_KEY_SUBJECT);
+      }
+      localStorage.setItem(STORAGE_KEY_TS, Date.now().toString());
     } catch { /* ignore */ }
   }, 800);
 }
 
 function clearDraft() {
+  cancelAutosave();
   try {
     localStorage.removeItem(STORAGE_KEY_DRAFT);
     localStorage.removeItem(STORAGE_KEY_SUBJECT);
+    localStorage.removeItem(STORAGE_KEY_TS);
   } catch { /* ignore */ }
 }
 
@@ -154,107 +149,43 @@ const defaultFlashcardProgress = (): FlashcardProgress => ({
   seenCount: 0,
 });
 
-// ── Custom session builder ───────────────────────────────────────────────────
+// ── Generation abort controller ───────────────────────────────────────────────
 
-function buildCustomSession(notes: string): SubjectContent {
-  const firstLine = notes.slice(0, 60).trim().split('\n')[0] || 'Custom Study Notes';
-  const topicName = firstLine.replace(/[#*_`]/g, '').trim().slice(0, 50) || 'Custom Notes';
+let generationAbort: AbortController | null = null;
+let generationRequestId = 0;
 
-  return {
-    id:          'custom-' + Date.now(),
-    name:        topicName,
-    category:    'Custom Notes',
-    description: 'AI-structured study materials from your uploaded notes.',
-    difficulty:  'Intermediate',
-    estimatedMinutes: Math.max(10, Math.min(60, Math.ceil(notes.split(/\s+/).length / 40))),
-    sampleNotes: notes,
-    learningObjectives: [
-      'Identify and understand core concepts from your notes',
-      'Recall key facts using spaced repetition flashcards',
-      'Test comprehension with targeted quiz questions',
-      'Reinforce retention with mnemonic memory hooks',
-    ],
-    flashcards: [
-      {
-        id:       'cf-1',
-        question: 'What is the primary subject of these notes?',
-        answer:   `${topicName}\n\n${notes.slice(0, 200)}`,
-        tag:      'Overview',
-      },
-      {
-        id:       'cf-2',
-        question: 'What are the key takeaways from these notes?',
-        answer:   notes.slice(200, 500) || 'Review the full notes to extract key principles.',
-        tag:      'Concepts',
-      },
-    ],
-    quizQuestions: [
-      {
-        id:           'cq-1',
-        question:     `What is the main topic explored in this study session?`,
-        options:      [topicName, 'Software Architecture', 'Computer Networks', 'Algorithm Design'],
-        correctIndex: 0,
-        explanation:  `The uploaded notes focus on: ${topicName}.`,
-      },
-    ],
-    summarySections: [
-      {
-        title:       'Key Concepts & Overview',
-        content:     notes,
-        keyTakeaway: 'Review foundational principles before moving to practice problems.',
-      },
-    ],
-    mnemonics: [
-      {
-        title:           'Active Learning Framework',
-        acronymOrPhrase: 'R E C A P',
-        breakdown: [
-          'R — Read the full notes carefully',
-          'E — Extract key concepts',
-          'C — Create flashcard summaries',
-          'A — Apply with practice questions',
-          'P — Practice with spaced repetition',
-        ],
-        explanation: 'Use this sequence every time you start a new study session.',
-      },
-    ],
-  };
-}
+// ── Toast timer tracking ──────────────────────────────────────────────────────
+
+const toastTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 // ── Store ────────────────────────────────────────────────────────────────────
 
 const draft = loadDraft();
 
 export const useStudyStore = create<StudyState>((set, get) => ({
-  // ── Editor ─────────────────────────────────
-  notes:           draft.notes,
+  notes:             draft.notes,
   selectedSubjectId: draft.subjectId,
-  autosavedAt:     draft.notes ? Date.now() : null,
+  autosavedAt:       draft.timestamp,
 
-  // ── View ───────────────────────────────────
-  view:            'home',
+  view:              'home',
+  isGenerating:      false,
+  generationError:   null,
 
-  // ── Session ────────────────────────────────
-  currentSession:  null,
-  activeTab:       'overview',
-  tabHistory:      [],
-  isSidebarOpen:   true,
+  currentSession:    null,
+  activeTab:         'overview',
+  tabHistory:        [],
+  isSidebarOpen:     true,
 
-  // ── Progress ───────────────────────────────
   flashcardProgress: defaultFlashcardProgress(),
   quizProgress:      null,
 
-  // ── Persistence ────────────────────────────
-  recentSessions:  loadRecentSessions(),
-
-  // ── UI ─────────────────────────────────────
-  toasts:          [],
-  isShortcutsOpen: false,
+  recentSessions:    loadRecentSessions(),
+  toasts:            [],
+  isShortcutsOpen:   false,
 
   // ── Editor actions ─────────────────────────
 
   setNotes: (notes) => {
-    const { selectedSubjectId } = get();
     set({ notes, selectedSubjectId: null, autosavedAt: Date.now() });
     scheduleDraftSave(notes, null);
   },
@@ -262,8 +193,8 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   selectSubject: (subjectId) => {
     const subject = SUBJECT_CHIPS.find((s) => s.id === subjectId);
     if (subject) {
-      set({ notes: subject.sampleNotes, selectedSubjectId: subjectId, autosavedAt: Date.now() });
-      scheduleDraftSave(subject.sampleNotes, subjectId);
+      set({ notes: subject.sampleNotes ?? '', selectedSubjectId: subjectId, autosavedAt: Date.now() });
+      scheduleDraftSave(subject.sampleNotes ?? '', subjectId);
     }
   },
 
@@ -274,24 +205,104 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
   // ── Session flow ───────────────────────────
 
-  beginGeneration: () => set({ view: 'generating' }),
+  beginGeneration: () => {
+    const { notes, selectedSubjectId } = get();
 
-  finishGeneration: () => {
+    if (generationAbort) {
+      generationAbort.abort();
+      generationAbort = null;
+    }
+
+    const rid = ++generationRequestId;
+    const capturedSubjectId = selectedSubjectId;
+    const subject = SUBJECT_CHIPS.find((s) => s.id === capturedSubjectId);
+
+    if (subject) {
+      set({ view: 'generating', generationError: null, isGenerating: true });
+
+      setTimeout(() => {
+        if (rid !== generationRequestId) return;
+        const state = get();
+        if (state.view === 'generating') {
+          state.finishGeneration(subject, capturedSubjectId);
+        }
+      }, 2000);
+      return;
+    }
+
+    const abort = new AbortController();
+    generationAbort = abort;
+
+    set({ view: 'generating', generationError: null, isGenerating: true });
+
+    const handleSuccess = (response: Awaited<ReturnType<typeof generateStudyContent>>) => {
+      if (abort.signal.aborted) return;
+      if (rid !== generationRequestId) return;
+
+      generationAbort = null;
+
+      if (response.success && response.data) {
+        try {
+          get().finishGeneration(response.data, capturedSubjectId);
+        } catch {
+          set({ generationError: 'Failed to process AI response.', isGenerating: false });
+        }
+      } else {
+        set({ generationError: response.error || 'An unknown error occurred.', isGenerating: false });
+      }
+    };
+
+    const handleError = (err: unknown) => {
+      if (abort.signal.aborted) return;
+      if (rid !== generationRequestId) return;
+
+      generationAbort = null;
+      const message = err instanceof Error ? err.message : 'An unknown error occurred.';
+      set({ generationError: message, isGenerating: false });
+    };
+
+    generateStudyContent(notes, abort.signal).then(handleSuccess).catch(handleError);
+  },
+
+  cancelGeneration: () => {
+    if (generationAbort) {
+      generationAbort.abort();
+      generationAbort = null;
+    }
+    set({ view: 'home', isGenerating: false, generationError: null });
+  },
+
+  finishGeneration: (apiData, subjectIdOverride) => {
     const { notes, selectedSubjectId, recentSessions } = get();
-    const session =
-      SUBJECT_CHIPS.find((s) => s.id === selectedSubjectId) ?? buildCustomSession(notes);
+    const effectiveSubjectId = subjectIdOverride ?? selectedSubjectId;
 
+    const session: SubjectContent = apiData ?? SUBJECT_CHIPS.find((s) => s.id === effectiveSubjectId) ?? {
+      id: 'fallback-' + Date.now(),
+      name: 'Custom Study Notes',
+      category: 'Custom Notes',
+      description: 'Study materials created from your notes.',
+      difficulty: 'Intermediate',
+      estimatedMinutes: 20,
+      sampleNotes: notes,
+      learningObjectives: ['Review core concepts from your notes'],
+      flashcards: [{ id: 'fc-1', question: 'What is the main topic?', answer: notes.slice(0, 200), tag: 'Overview' }],
+      quizQuestions: [{ id: 'q-1', question: 'What was covered?', options: ['Topic A', 'Topic B', 'Topic C', 'Topic D'], correctIndex: 0, explanation: 'Review your notes.' }],
+      summarySections: [{ title: 'Overview', content: notes, keyTakeaway: 'Review key concepts.' }],
+      mnemonics: [{ title: 'Memory Hook', acronymOrPhrase: 'RECAP', breakdown: ['R - Read', 'E - Extract', 'C - Create', 'A - Apply', 'P - Practice'], explanation: 'Study framework.' }],
+    };
+
+    const sessionId = session.id ?? 'session-' + Date.now();
     const newRecent: RecentSession = {
-      id:         session.id + '-' + Date.now(),
+      id:         sessionId + '-' + Date.now(),
       name:       session.name,
       category:   session.category,
       difficulty: session.difficulty,
       timestamp:  Date.now(),
-      subjectId:  selectedSubjectId,
+      subjectId:  effectiveSubjectId,
       notes,
     };
 
-    const updated = [newRecent, ...recentSessions.filter((r) => r.name !== session.name)];
+    const updated = [newRecent, ...recentSessions.filter((r) => r.id !== newRecent.id && r.name !== session.name + '-' + effectiveSubjectId)];
     saveRecentSessions(updated);
     clearDraft();
 
@@ -304,18 +315,27 @@ export const useStudyStore = create<StudyState>((set, get) => ({
       flashcardProgress: defaultFlashcardProgress(),
       quizProgress:      null,
       autosavedAt:       null,
+      isGenerating:      false,
+      generationError:   null,
     });
 
     get().addToast(`Workspace ready — ${session.name}`, 'success');
   },
 
-  returnHome: () =>
+  returnHome: () => {
+    if (generationAbort) {
+      generationAbort.abort();
+      generationAbort = null;
+    }
     set({
-      view:           'home',
-      currentSession: null,
-      activeTab:      'overview',
-      tabHistory:     [],
-    }),
+      view:            'home',
+      currentSession:  null,
+      activeTab:       'overview',
+      tabHistory:      [],
+      isGenerating:    false,
+      generationError: null,
+    });
+  },
 
   // ── Workspace nav ──────────────────────────
 
@@ -356,11 +376,18 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   addToast: (message, type = 'info') => {
     const id = Date.now().toString(36);
     set((s) => ({ toasts: [...s.toasts, { id, message, type }] }));
-    setTimeout(() => get().removeToast(id), 3500);
+    const timer = setTimeout(() => get().removeToast(id), 3500);
+    toastTimers.set(id, timer);
   },
 
-  removeToast: (id) =>
-    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+  removeToast: (id) => {
+    const timer = toastTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      toastTimers.delete(id);
+    }
+    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+  },
 
   // ── UI ─────────────────────────────────────
 

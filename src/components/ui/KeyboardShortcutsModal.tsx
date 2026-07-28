@@ -50,17 +50,17 @@ export function KeyboardShortcutsModal() {
             transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
             className="fixed inset-x-0 top-[15%] z-50 mx-auto w-full max-w-sm px-4"
           >
-            <div className="rounded-2xl border border-[rgba(255,255,255,0.1)] bg-[#18181b] shadow-[0_32px_64px_rgba(0,0,0,0.6)]">
+            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_32px_64px_rgba(0,0,0,0.3)]">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-5 py-4">
+              <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
                 <div className="flex items-center gap-2">
-                  <Keyboard className="size-4 text-[#8b5cf6]" />
-                  <span className="text-[14px] font-semibold text-white">Keyboard Shortcuts</span>
+                  <Keyboard className="size-4 text-[var(--color-primary)]" />
+                  <span className="text-[14px] font-semibold text-[var(--color-foreground)]">Keyboard Shortcuts</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="flex size-7 items-center justify-center rounded-lg text-[#71717a] transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-white"
+                  className="flex size-7 items-center justify-center rounded-lg text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-input)] hover:text-[var(--color-foreground)]"
                   aria-label="Close shortcuts"
                 >
                   <X className="size-4" />
