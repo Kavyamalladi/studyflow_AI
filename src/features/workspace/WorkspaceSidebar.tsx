@@ -10,6 +10,19 @@ export function WorkspaceSidebar() {
   const toggleSidebar = useStudyStore((s) => s.toggleSidebar);
   const returnHome = useStudyStore((s) => s.returnHome);
   const session = useStudyStore((s) => s.currentSession);
+  const fcProgress = useStudyStore((s) => s.flashcardProgress);
+  const quizProgress = useStudyStore((s) => s.quizProgress);
+
+  const totalCards = session?.flashcards.length ?? 0;
+  const cardsDone = fcProgress.seenCount;
+  const quizPct = quizProgress?.total
+    ? Math.round((quizProgress.score / quizProgress.total) * 100)
+    : null;
+  const overallPct = quizPct !== null
+    ? Math.round(((cardsDone / Math.max(totalCards, 1)) * 100 + quizPct) / 2)
+    : totalCards > 0
+      ? Math.round((cardsDone / totalCards) * 100)
+      : 0;
 
   return (
     <aside
@@ -44,6 +57,26 @@ export function WorkspaceSidebar() {
             </span>
             <span className="text-[11px] text-[var(--color-muted-foreground)]">{session.estimatedMinutes}m</span>
           </div>
+
+          {/* Progress */}
+          {totalCards > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-[var(--color-muted-foreground)]">Progress</span>
+                <span className="font-semibold text-[var(--color-primary)]">{overallPct}%</span>
+              </div>
+              <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
+                <div
+                  className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-300"
+                  style={{ width: `${overallPct}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-[var(--color-muted-foreground)]">
+                <span>Cards {cardsDone}/{totalCards}</span>
+                {quizPct !== null && <span>Quiz {quizPct}%</span>}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

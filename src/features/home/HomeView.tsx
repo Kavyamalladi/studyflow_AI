@@ -3,7 +3,7 @@ import {
   type DragEvent, type ChangeEvent, type KeyboardEvent,
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Upload, X, Sparkles, ArrowRight, Clock, RotateCcw, FileText } from 'lucide-react';
+import { Upload, X, Sparkles, ArrowRight, Clock, RotateCcw, FileText, Play } from 'lucide-react';
 import { SUBJECT_CHIPS } from '@/constants/subjects';
 import { useStudyStore } from '@/store/study.store';
 import { cn } from '@/utils';
@@ -37,6 +37,10 @@ export function HomeView() {
   const clearNotes      = useStudyStore((s) => s.clearNotes);
   const beginGeneration = useStudyStore((s) => s.beginGeneration);
   const setShortcutsOpen = useStudyStore((s) => s.setShortcutsOpen);
+  const currentSession   = useStudyStore((s) => s.currentSession);
+  const clearSession     = useStudyStore((s) => s.clearSession);
+  const fcProgress       = useStudyStore((s) => s.flashcardProgress);
+  const quizProgress     = useStudyStore((s) => s.quizProgress);
 
   const [isDragging, setIsDragging] = useState(false);
   const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
@@ -110,6 +114,28 @@ export function HomeView() {
             Paste your notes and instantly generate an interactive study workspace.
           </p>
         </div>
+
+        {/* ── Resume session banner ── */}
+        {currentSession && (
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--color-primary)]/30 bg-[rgba(139,92,246,0.08)] px-4 py-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[rgba(139,92,246,0.15)]">
+              <Play className="size-4 text-[var(--color-primary)]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold text-[var(--color-foreground)]">{currentSession.name}</p>
+              <p className="text-[11px] text-[var(--color-muted)]">
+                {currentSession.flashcards.length} cards · {currentSession.quizQuestions.length} questions · Cards {fcProgress.seenCount}/{currentSession.flashcards.length}{quizProgress ? ` · Quiz ${Math.round((quizProgress.score / quizProgress.total) * 100)}%` : ''}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={clearSession}
+              className="shrink-0 rounded-lg px-2 py-1 text-[11px] text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-input)] hover:text-[var(--color-foreground)]"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
         {/* ── Draft restore banner ── */}
         <AnimatePresence>
