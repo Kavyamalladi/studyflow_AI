@@ -9,7 +9,7 @@ const env = getEnv();
 const app = express();
 
 app.use(cors({ origin: env.CORS_ORIGIN }));
-app.use(express.json({ limit: '8kb' }));
+app.use(express.json({ limit: '25kb' }));
 
 app.use(healthRouter);
 app.use('/api', generateRouter);

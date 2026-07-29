@@ -35,14 +35,14 @@ export const subjectContentSchema = z.object({
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   estimatedMinutes: z.number().int().positive().max(120),
   learningObjectives: z.array(z.string().min(1)).min(1).max(8),
-  flashcards: z.array(flashcardSchema).min(1).max(30),
-  quizQuestions: z.array(quizQuestionSchema).min(1).max(20),
-  summarySections: z.array(summarySectionSchema).min(1).max(10),
-  mnemonics: z.array(mnemonicSchema).min(1).max(10),
+  flashcards: z.array(flashcardSchema).min(3).max(40),
+  quizQuestions: z.array(quizQuestionSchema).min(3).max(25),
+  summarySections: z.array(summarySectionSchema).min(2).max(15),
+  mnemonics: z.array(mnemonicSchema).min(1).max(15),
 });
 
 export type SubjectContent = z.infer<typeof subjectContentSchema>;
 
 export const generateRequestBodySchema = z.object({
-  notes: z.string().min(10).max(5000),
+  notes: z.string().min(5).max(20000),
 });

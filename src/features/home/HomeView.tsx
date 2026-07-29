@@ -8,7 +8,7 @@ import { SUBJECT_CHIPS } from '@/constants/subjects';
 import { useStudyStore } from '@/store/study.store';
 import { cn } from '@/utils';
 
-const MAX_CHARS = 3000;
+const MAX_CHARS = 10000;
 const SUBJECT_CHIPS_SHOWN = SUBJECT_CHIPS.slice(0, 7);
 
 function timeAgo(ts: number) {
@@ -49,6 +49,9 @@ export function HomeView() {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && canGenerate) {
+        e.preventDefault();
+        beginGeneration();
+      } else if (e.key === 'Enter' && !e.shiftKey && canGenerate) {
         e.preventDefault();
         beginGeneration();
       }

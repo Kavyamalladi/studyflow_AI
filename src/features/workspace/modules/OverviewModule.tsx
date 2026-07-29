@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Clock, Target, Layers, CheckCircle, Zap, AlignLeft,
@@ -31,8 +30,18 @@ const MOCK_RECENT = [
 export function OverviewModule() {
   const session = useStudyStore((s) => s.currentSession);
   const setActiveTab = useStudyStore((s) => s.setActiveTab);
-  // Simulated progress for visual richness
-  const [progress] = useState(35);
+  const fcProgress = useStudyStore((s) => s.flashcardProgress);
+  const quizProgress = useStudyStore((s) => s.quizProgress);
+
+  const flashcardPct = session?.flashcards.length
+    ? Math.round((fcProgress.seenCount / session.flashcards.length) * 100)
+    : 0;
+  const quizPct = quizProgress && quizProgress.total > 0
+    ? Math.round((quizProgress.score / quizProgress.total) * 100)
+    : 0;
+  const progress = quizProgress
+    ? Math.round((flashcardPct + quizPct) / 2)
+    : flashcardPct;
 
   if (!session) return null;
   const diff = DIFFICULTY_CONFIG[session.difficulty] ?? DIFFICULTY_CONFIG.Intermediate;
