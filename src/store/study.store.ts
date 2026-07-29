@@ -193,8 +193,8 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   selectSubject: (subjectId) => {
     const subject = SUBJECT_CHIPS.find((s) => s.id === subjectId);
     if (subject) {
-      set({ notes: subject.sampleNotes ?? '', selectedSubjectId: subjectId, autosavedAt: Date.now() });
-      scheduleDraftSave(subject.sampleNotes ?? '', subjectId);
+      set({ notes: '', selectedSubjectId: subjectId, autosavedAt: Date.now() });
+      clearDraft();
     }
   },
 

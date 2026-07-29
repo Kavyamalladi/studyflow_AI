@@ -22,7 +22,7 @@ The JSON must follow this exact structure:
       "answer": "string (concise, accurate answer — 1-4 sentences)",
       "tag": "string (short category tag like 'Definitions', 'Processes', 'Formulas')"
     }
-  ] (6-20 cards),
+  ] (6-8 cards),
   "quizQuestions": [
     {
       "id": "q-1",
@@ -31,14 +31,14 @@ The JSON must follow this exact structure:
       "correctIndex": number (0-based index of the correct option),
       "explanation": "string (why the correct answer is right, 1-3 sentences)"
     }
-  ] (5-15 questions),
+  ] (5-10 questions),
   "summarySections": [
     {
       "title": "string (section heading)",
       "content": "string (3-6 sentence summary of this topic area — be thorough)",
       "keyTakeaway": "string (one memorable sentence to remember)"
     }
-  ] (3-8 sections),
+  ] (3-5 sections),
   "mnemonics": [
     {
       "title": "string (what this mnemonic helps you remember)",
@@ -46,7 +46,7 @@ The JSON must follow this exact structure:
       "breakdown": ["string (what each letter/word stands for)", ...],
       "explanation": "string (how to use this mnemonic effectively)"
     }
-  ] (2-6 mnemonics)
+  ] (2-3 mnemonics)
 }
 
 RULES:

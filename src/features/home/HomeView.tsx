@@ -43,7 +43,7 @@ export function HomeView() {
   const fileRef     = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const canGenerate = notes.trim().length > 10;
+  const canGenerate = notes.trim().length > 10 || selectedSubjectId !== null;
   const showDraftBanner = !draftBannerDismissed && autosavedAt && notes.length > 30;
 
   const handleKeyDown = useCallback(

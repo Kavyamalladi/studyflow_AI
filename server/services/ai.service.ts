@@ -55,7 +55,7 @@ export async function generateStudyContent(notes: string): Promise<GenerateResul
           { role: 'user', content: buildUserPrompt(notes) },
         ],
         temperature: 0.7,
-        max_tokens: 8192,
+        max_tokens: 16384,
       }),
       signal: controller.signal,
     });
