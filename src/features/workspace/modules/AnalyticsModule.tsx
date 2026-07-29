@@ -37,10 +37,18 @@ export function AnalyticsModule() {
 
   const totalCards = session.flashcards.length;
   const cardsReviewed = fcProgress.seenCount;
+  const easyCards = Object.values(fcProgress.confidence).filter((c) => c === 'easy').length;
+  const flashcardMastery = cardsReviewed > 0
+    ? Math.round((easyCards / cardsReviewed) * 100)
+    : null;
   const quizAccuracy = quizProgress && quizProgress.total > 0
     ? Math.round((quizProgress.score / quizProgress.total) * 100)
     : null;
-  const overallAccuracy = quizAccuracy ?? 0;
+
+  const parts = [flashcardMastery, quizAccuracy].filter((p): p is number => p !== null);
+  const overallAccuracy = parts.length > 0
+    ? Math.round(parts.reduce((a, b) => a + b, 0) / parts.length)
+    : 0;
 
   const tagStats = computeTagStats(session.flashcards, fcProgress.confidence);
 
@@ -58,11 +66,11 @@ export function AnalyticsModule() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: 'Accuracy',       value: quizAccuracy !== null ? `${overallAccuracy}%` : '—', icon: TrendingUp, accent: true },
-          { label: 'Cards reviewed', value: String(cardsReviewed), icon: Layers, accent: false },
-          { label: 'Total cards',    value: String(totalCards),    icon: Award, accent: false },
-          { label: 'Quiz questions', value: String(session.quizQuestions.length), icon: Clock, accent: false },
-        ].map(({ label, value, icon: Icon, accent }, i) => (
+          { label: 'Overall',         value: parts.length > 0 ? `${overallAccuracy}%` : '—', icon: TrendingUp, accent: true },
+          { label: 'Flashcards',      value: flashcardMastery !== null ? `${flashcardMastery}%` : '—', icon: Layers, accent: false, sub: `${cardsReviewed}/${totalCards} rated` },
+          { label: 'Quiz',            value: quizAccuracy !== null ? `${quizAccuracy}%` : '—', icon: Clock, accent: false, sub: quizProgress ? `${quizProgress.score}/${quizProgress.total}` : undefined },
+          { label: 'Easy cards',      value: String(easyCards), icon: Award, accent: false },
+        ].map(({ label, value, icon: Icon, accent, sub }, i) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, y: 8 }}
@@ -78,6 +86,7 @@ export function AnalyticsModule() {
             </div>
             <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted-foreground)]">{label}</p>
             <p className="mt-0.5 text-[24px] font-bold tracking-tight text-[var(--color-foreground)]">{value}</p>
+            {sub && <p className="mt-0.5 text-[11px] text-[var(--color-muted-foreground)]">{sub}</p>}
           </motion.div>
         ))}
       </div>
@@ -93,10 +102,10 @@ export function AnalyticsModule() {
           </ProgressRing>
           <div className="text-center">
             <p className="text-[14px] font-semibold text-[var(--color-foreground)]">
-              {overallAccuracy >= 80 ? 'Excellent' : overallAccuracy >= 60 ? 'Good progress' : overallAccuracy > 0 ? 'Needs work' : 'No quiz data yet'}
+              {overallAccuracy >= 80 ? 'Excellent' : overallAccuracy >= 60 ? 'Good progress' : overallAccuracy > 0 ? 'Needs work' : 'No data yet'}
             </p>
             <p className="mt-0.5 text-[12px] text-[var(--color-muted-foreground)]">
-              {quizProgress ? 'Based on quiz performance' : 'Take the quiz to see analytics'}
+              {parts.length > 0 ? `Combined: flashcards ${flashcardMastery ?? '—'}%${quizAccuracy !== null ? `, quiz ${quizAccuracy}%` : ''}` : 'Rate flashcards or take the quiz'}
             </p>
           </div>
         </div>
