@@ -52,12 +52,13 @@ The JSON must follow this exact structure:
 RULES:
 1. Every ID must be unique within its array.
 2. Quiz options must have exactly 4 items. One MUST be correct.
-3. Flashcards must test understanding, not just trivia.
-4. Summary sections should cover distinct topics — don't repeat. Be thorough and detailed.
-5. Estimate difficulty honestly based on content complexity.
-6. Generate generous content — aim for higher counts, not minimums.
-7. ALL strings must be non-empty.
-8. Quiz options and flashcards must be substantive, not filler.`;
+3. Vary the correctIndex across questions — do NOT put every correct answer at the same position. Distribute them evenly across all four option letters (A, B, C, D).
+4. Flashcards must test understanding, not just trivia.
+5. Summary sections should cover distinct topics — don't repeat. Be thorough and detailed.
+6. Estimate difficulty honestly based on content complexity.
+7. Generate generous content — aim for higher counts, not minimums.
+8. ALL strings must be non-empty.
+9. Quiz options and flashcards must be substantive, not filler.`;
 }
 
 export function buildUserPrompt(notes: string): string {
