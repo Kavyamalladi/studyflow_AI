@@ -27,6 +27,7 @@ function EmptyGuard() {
 
 export function QuizModule() {
   const session = useStudyStore((s) => s.currentSession);
+  const recordQuizComplete = useStudyStore((s) => s.recordQuizComplete);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [records, setRecords] = useState<QuestionRecord[]>([]);
@@ -76,7 +77,12 @@ export function QuizModule() {
       setTimerActive(true);
       resetTimer(TIME_PER_QUESTION);
     } else {
-      setRecords((r) => [...r, record]);
+      setRecords((r) => {
+        const all = [...r, record];
+        const score = all.filter((rec, i) => rec.answered === questions[i]?.correctIndex).length;
+        recordQuizComplete(score, all.length);
+        return all;
+      });
       setQuizState('done');
     }
   };
