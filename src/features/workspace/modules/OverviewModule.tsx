@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import {
   Clock, Target, Layers, CheckCircle, Zap, AlignLeft,
-  BookOpen, TrendingUp, BarChart2, Flame,
+  TrendingUp, BarChart2, Flame,
 } from 'lucide-react';
 import { useStudyStore } from '@/store/study.store';
 import { ProgressRing } from '../components/ProgressRing';
@@ -20,28 +20,25 @@ const QUICK_MODULES = [
   { tab: 'mnemonics' as const, icon: Zap,          label: 'Mnemonics',   desc: 'Memory hooks' },
 ];
 
-// Mock progress data (would come from session tracking in real app)
-const MOCK_WEAK_TOPICS = ['Deadlock Handling', 'Banker\'s Algorithm', 'Bounded Waiting'];
-const MOCK_RECENT = [
-  { label: 'Completed 4 flashcards', time: '2m ago', icon: Layers },
-  { label: 'Session started', time: '5m ago', icon: BookOpen },
-];
-
 export function OverviewModule() {
-  const session = useStudyStore((s) => s.currentSession);
-  const setActiveTab = useStudyStore((s) => s.setActiveTab);
-  const fcProgress = useStudyStore((s) => s.flashcardProgress);
-  const quizProgress = useStudyStore((s) => s.quizProgress);
+  const session           = useStudyStore((s) => s.currentSession);
+  const setActiveTab      = useStudyStore((s) => s.setActiveTab);
+  const flashcardProgress = useStudyStore((s) => s.flashcardProgress);
+  const quizProgress      = useStudyStore((s) => s.quizProgress);
 
-  const flashcardPct = session?.flashcards.length
-    ? Math.round((fcProgress.seenCount / session.flashcards.length) * 100)
-    : 0;
-  const quizPct = quizProgress && quizProgress.total > 0
-    ? Math.round((quizProgress.score / quizProgress.total) * 100)
-    : 0;
+  // Compute real progress from actual user activity
+  const totalCards     = session?.flashcards.length ?? 0;
+  const totalQuestions = session?.quizQuestions.length ?? 0;
+
+  const cardPct  = totalCards     > 0 ? (flashcardProgress.seenCount / totalCards)     * 100 : 0;
+  const quizPct  = totalQuestions > 0 && quizProgress ? (quizProgress.score / totalQuestions) * 100 : 0;
+
+  // Weighted: flashcards 60%, quiz 40% (or 100% flashcards if no quiz done yet)
   const progress = quizProgress
-    ? Math.round((flashcardPct + quizPct) / 2)
-    : flashcardPct;
+    ? Math.round(cardPct * 0.6 + quizPct * 0.4)
+    : Math.round(cardPct);
+
+  const clampedProgress = Math.min(100, Math.max(0, progress));
 
   if (!session) return null;
   const diff = DIFFICULTY_CONFIG[session.difficulty] ?? DIFFICULTY_CONFIG.Intermediate;
@@ -85,10 +82,10 @@ export function OverviewModule() {
         </div>
 
         {/* Progress ring */}
-        <ProgressRing size={80} strokeWidth={6} progress={progress} className="shrink-0 sm:mt-1">
+        <ProgressRing size={80} strokeWidth={6} progress={clampedProgress} className="shrink-0 sm:mt-1">
           <div className="text-center">
-            <span className="block text-[16px] font-bold text-[var(--color-foreground)]">{progress}%</span>
-            <span className="block text-[9px] text-[var(--color-muted-foreground)] uppercase tracking-wide">done</span>
+            <span className="block text-[16px] font-bold text-white">{clampedProgress}%</span>
+            <span className="block text-[9px] text-[#71717a] uppercase tracking-wide">done</span>
           </div>
         </ProgressRing>
       </div>
@@ -96,14 +93,14 @@ export function OverviewModule() {
       {/* ── Progress bar ── */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-[var(--color-muted)]">Session progress</span>
-          <span className="text-[12px] font-semibold text-[var(--color-foreground)]">{progress}%</span>
+          <span className="text-[12px] text-[#a1a1aa]">Session progress</span>
+          <span className="text-[12px] font-semibold text-white">{clampedProgress}%</span>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
           <motion.div
             className="h-full rounded-full bg-[#8b5cf6]"
             initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
+            animate={{ width: `${clampedProgress}%` }}
             transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
           />
         </div>
@@ -162,41 +159,36 @@ export function OverviewModule() {
         {/* Right column — Weak Topics + Recent Activity — 2 cols */}
         <div className="flex flex-col gap-4 lg:col-span-2">
 
-          {/* Weak Topics */}
-          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+          {/* Cards seen */}
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#18181b] p-5">
             <div className="mb-3 flex items-center gap-2">
               <Flame className="size-4 text-[#f59e0b]" />
-              <h2 className="text-[14px] font-semibold text-[var(--color-foreground)]">Needs Review</h2>
+              <h2 className="text-[14px] font-semibold text-white">Flashcard Progress</h2>
             </div>
-            <ul className="space-y-2">
-              {MOCK_WEAK_TOPICS.map((topic, i) => (
-                <li key={i} className="flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-[#f59e0b]" />
-                  <span className="text-[13px] text-[var(--color-muted)]">{topic}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="text-[24px] font-bold text-white">
+              {flashcardProgress.seenCount}
+              <span className="text-[14px] font-normal text-[#71717a]"> / {totalCards}</span>
+            </p>
+            <p className="mt-1 text-[12px] text-[#a1a1aa]">cards reviewed</p>
           </div>
 
-          {/* Recent Activity */}
-          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+          {/* Quiz score */}
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#18181b] p-5">
             <div className="mb-3 flex items-center gap-2">
               <TrendingUp className="size-4 text-[#8b5cf6]" />
-              <h2 className="text-[14px] font-semibold text-[var(--color-foreground)]">Activity</h2>
+              <h2 className="text-[14px] font-semibold text-white">Quiz Score</h2>
             </div>
-            <ul className="space-y-3">
-              {MOCK_RECENT.map(({ label, time, icon: Icon }, i) => (
-                <li key={i} className="flex items-start gap-2.5">
-                  <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-[var(--color-border)]">
-                    <Icon className="size-3.5 text-[var(--color-muted-foreground)]" />
-                  </div>
-                  <div>
-                    <p className="text-[12px] text-[var(--color-muted)]">{label}</p>
-                    <p className="text-[11px] text-[var(--color-muted-foreground)]">{time}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {quizProgress ? (
+              <>
+                <p className="text-[24px] font-bold text-white">
+                  {quizProgress.score}
+                  <span className="text-[14px] font-normal text-[#71717a]"> / {quizProgress.total}</span>
+                </p>
+                <p className="mt-1 text-[12px] text-[#a1a1aa]">correct answers</p>
+              </>
+            ) : (
+              <p className="text-[13px] text-[#52525b]">Not attempted yet</p>
+            )}
           </div>
         </div>
       </div>

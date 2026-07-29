@@ -8,7 +8,6 @@ import { SUBJECT_CHIPS } from '@/constants/subjects';
 import { useStudyStore } from '@/store/study.store';
 import { cn } from '@/utils';
 
-const MAX_CHARS = 10000;
 const SUBJECT_CHIPS_SHOWN = SUBJECT_CHIPS.slice(0, 7);
 
 function timeAgo(ts: number) {
@@ -52,7 +51,7 @@ export function HomeView() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && canGenerate) {
+      if (e.key === 'Enter' && !e.shiftKey && canGenerate) {
         e.preventDefault();
         beginGeneration();
       } else if (e.key === 'Enter' && !e.shiftKey && canGenerate) {
@@ -85,7 +84,7 @@ export function HomeView() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target?.result as string;
-      if (text) setNotes(text.slice(0, MAX_CHARS));
+      if (text) setNotes(text);
     };
     reader.readAsText(file);
   };
@@ -100,7 +99,7 @@ export function HomeView() {
   };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-4 py-8">
+    <div className="flex h-full flex-col items-center overflow-y-auto px-4 py-8">
       <div className="w-full max-w-[640px] space-y-6">
 
         {/* ── Logo + headline ── */}
@@ -196,7 +195,7 @@ export function HomeView() {
           <textarea
             ref={textareaRef}
             value={notes}
-            onChange={(e) => setNotes(e.target.value.slice(0, MAX_CHARS))}
+            onChange={(e) => setNotes(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={8}
             placeholder={`Paste your lecture notes, textbook excerpt, or study topic here…\n\nExample:\n  Process Synchronization — Critical Section Problem\n  • Mutual Exclusion: only one process in CS at a time\n  • Progress: selection cannot be postponed indefinitely\n  • Bounded Waiting: limit on how many times others enter CS`}
@@ -236,18 +235,14 @@ export function HomeView() {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className={cn(
-                'tabular-nums text-[12px]',
-                notes.length > MAX_CHARS * 0.9 ? 'text-[var(--color-warning)]' : 'text-[var(--color-muted-foreground)]',
-              )}>
-                {notes.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+              <span className="tabular-nums text-[12px] text-[#52525b]">
+                {notes.length.toLocaleString()} chars
               </span>
               <button
                 type="button"
                 onClick={() => setShortcutsOpen(true)}
                 className="hidden items-center gap-1 text-[11px] text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-muted)] sm:flex"
               >
-                <kbd className="kbd">⌘</kbd>
                 <kbd className="kbd">↵</kbd>
                 <span className="ml-1">to generate</span>
               </button>
