@@ -50,6 +50,7 @@ export function FlashcardsModule() {
   }, [total]);
 
   const handleConfidence = (conf: Confidence) => {
+    useStudyStore.getState().recordFlashcardConfidence(card.id, conf);
     const next = [...results, { id: card.id, confidence: conf }];
     setResults(next);
     if (index < total - 1) {
