@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: studyflow-ai-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build:all
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: CORS_ORIGIN
+        sync: false  # Set to your Vercel deployment URL in Render dashboard
+      - key: OPENCODE_GO_API_KEY
+        sync: false  # Set your API key in Render dashboard
+      - key: GO_MODEL
+        value: deepseek-v4-flash
+    healthCheckPath: /health
